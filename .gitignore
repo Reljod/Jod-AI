@@ -38,3 +38,7 @@ coverage/
 # Misc
 *.log
 npm-debug.log*
+
+# Local Plan files
+**/.plan-url
+**/.plan-state.json
