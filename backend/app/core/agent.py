@@ -60,18 +60,15 @@ def _get_tools() -> list[BaseTool]:
     return ToolRegistry.get_all()
 
 
-def _route_after_action(state: AgentState) -> Literal["tools", "respond", "compact"]:
+async def _route_after_action(state: AgentState) -> Literal["tools", "respond", "compact"]:
     messages = state["messages"]
     last = messages[-1] if messages else None
 
     if isinstance(last, AIMessage) and last.tool_calls:
         return "tools"
 
-    estimated = sum(
-        len(m.content) if isinstance(m.content, str) else 0
-        for m in messages
-    )
-    threshold = settings.max_context_tokens * settings.context_compaction_threshold
+    estimated = await count_tokens(messages)
+    threshold = int(settings.max_context_tokens * settings.context_compaction_threshold)
     if estimated > threshold:
         return "compact"
 
@@ -124,13 +121,13 @@ def _create_graph() -> CompiledStateGraph:
         }
 
     async def should_continue(state: AgentState) -> Literal["tools", "respond", "compact"]:
-        return _route_after_action(state)
+        return await _route_after_action(state)
 
     async def compact_context_node(state: AgentState) -> dict[str, Any]:
         ctx = ContextState(messages=state["messages"])
         ctx = await compact_context(ctx)
         return {
-            "messages": ctx.messages,
+            "messages": ctx.to_langchain(),
             "context": {**state.get("context", {}), "compacted": True},
         }
 
