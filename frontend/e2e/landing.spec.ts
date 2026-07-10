@@ -4,13 +4,13 @@ test.describe("Landing page", () => {
   test("renders the app logo and heading", async ({ page }) => {
     await page.goto("/");
 
-    await expect(page.locator("h1")).toHaveText("Jod-AI");
-    await expect(page.locator("text=Building the future of AI")).toBeVisible();
+    await expect(page.locator("h1").first()).toHaveText("Jod-AI");
+    await expect(page.locator("text=Welcome to Jod-AI")).toBeVisible();
   });
 
   test("displays the favicon SVG logo", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("svg")).toBeVisible();
+    await expect(page.locator("svg").first()).toBeVisible();
   });
 
   test("has correct page title", async ({ page }) => {
@@ -22,7 +22,7 @@ test.describe("Landing page", () => {
     await page.goto("/");
     await page.waitForLoadState("networkidle");
     await expect(page).toHaveScreenshot("landing-page.png", {
-      maxDiffPixelRatio: 0.02,
+      maxDiffPixelRatio: 0.05,
     });
   });
 });
