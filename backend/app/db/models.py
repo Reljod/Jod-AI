@@ -21,7 +21,7 @@ class Session(Base):
     title: Mapped[str] = mapped_column(String(255), default="New Chat")
     model: Mapped[str] = mapped_column(String(128), default="openai/gpt-4o-mini")
     system_prompt: Mapped[str | None] = mapped_column(Text, nullable=True)
-    metadata: Mapped[dict | None] = mapped_column(JSONB, nullable=True, default=dict)
+    session_metadata: Mapped[dict | None] = mapped_column("metadata", JSONB, nullable=True, default=dict)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -47,7 +47,7 @@ class Message(Base):
     content: Mapped[str] = mapped_column(Text)
     model: Mapped[str | None] = mapped_column(String(128), nullable=True)
     token_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    metadata: Mapped[dict | None] = mapped_column(JSONB, nullable=True, default=dict)
+    message_metadata: Mapped[dict | None] = mapped_column("metadata", JSONB, nullable=True, default=dict)
     parent_id: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("messages.id"), nullable=True
     )
