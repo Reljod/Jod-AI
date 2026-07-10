@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 from langchain_core.tools import tool
@@ -17,10 +16,12 @@ def _get_workspace() -> Path:
 
 
 def _resolve_path(path: str) -> Path:
-    workspace = _get_workspace()
+    workspace = _get_workspace().resolve()
     full_path = (workspace / path).resolve()
-    if not str(full_path).startswith(str(workspace.resolve())):
-        raise PermissionError(f"Access denied: {path} is outside the workspace")
+    try:
+        full_path.relative_to(workspace)
+    except ValueError:
+        raise PermissionError(f"Access denied: {path} is outside the workspace") from None
     return full_path
 
 

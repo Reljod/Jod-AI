@@ -1,13 +1,13 @@
 from __future__ import annotations
 
+import json
+from datetime import datetime, timezone
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from datetime import datetime, timezone
 
 from app.core.agent import run_agent
 from app.db.models import AgentRun, Message as MessageModel
@@ -32,7 +32,7 @@ async def _save_agent_run(
     session_id: str,
     message_id: str,
     agent_result: dict,
-) -> None:
+) -> AgentRun:
     now = datetime.now(timezone.utc)
     agent_run = AgentRun(
         session_id=session_id,
@@ -45,6 +45,7 @@ async def _save_agent_run(
         completed_at=now,
     )
     db.add(agent_run)
+    return agent_run
 
 
 class ChatRequest(BaseModel):
@@ -117,7 +118,7 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
     db.add(assistant_msg)
     await db.flush()
 
-    await _save_agent_run(db, request.session_id, assistant_msg.id, agent_result)
+    agent_run = await _save_agent_run(db, request.session_id, assistant_msg.id, agent_result)
 
     await db.execute(
         update(SessionModel)
@@ -219,7 +220,5 @@ async def stream_chat(request: StreamChatRequest, db: AsyncSession = Depends(get
         )
 
         yield f"data: {json.dumps({'type': 'done', 'content': full_response})}\n\n"
-
-    import json
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
