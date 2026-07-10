@@ -67,6 +67,10 @@ async def _route_after_action(state: AgentState) -> Literal["tools", "respond", 
     if isinstance(last, AIMessage) and last.tool_calls:
         return "tools"
 
+    # Avoid infinite compaction loops if we've already compacted in this run
+    if state.get("context", {}).get("compacted", False):
+        return "respond"
+
     estimated = await count_tokens(messages)
     threshold = int(settings.max_context_tokens * settings.context_compaction_threshold)
     if estimated > threshold:
@@ -90,8 +94,11 @@ def _create_graph() -> CompiledStateGraph:
         system_prompt = state.get("system_prompt") or None
         messages = list(state["messages"])
 
+        # Only prepend SystemMessage if it is not already present at the start of the list
         if system_prompt:
-            messages = [SystemMessage(content=system_prompt)] + messages
+            has_system = any(isinstance(m, SystemMessage) for m in messages[:2])
+            if not has_system:
+                messages = [SystemMessage(content=system_prompt)] + messages
 
         response = await llm_with_tools.ainvoke(messages)
 

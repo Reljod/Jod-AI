@@ -183,6 +183,7 @@ async def stream_chat(request: StreamChatRequest, db: AsyncSession = Depends(get
 
     from app.core.agent import run_agent_stream
     from fastapi.responses import StreamingResponse
+    from app.db.session import SessionLocal
 
     async def event_stream():
         full_response = ""
@@ -202,22 +203,24 @@ async def stream_chat(request: StreamChatRequest, db: AsyncSession = Depends(get
             elif event["type"] == "tool_result":
                 yield f"data: {json.dumps({'type': 'tool', 'content': event['content']})}\n\n"
 
-        assistant_msg = MessageModel(
-            session_id=request.session_id,
-            role="assistant",
-            content=full_response,
-            model=model_name,
-        )
-        db.add(assistant_msg)
-        await db.flush()
-
-        await db.execute(
-            update(SessionModel)
-            .where(SessionModel.id == request.session_id)
-            .values(
-                title=request.message[:100] if len(history) == 0 else SessionModel.title
+        async with SessionLocal() as local_db:
+            assistant_msg = MessageModel(
+                session_id=request.session_id,
+                role="assistant",
+                content=full_response,
+                model=model_name,
             )
-        )
+            local_db.add(assistant_msg)
+            await local_db.flush()
+
+            await local_db.execute(
+                update(SessionModel)
+                .where(SessionModel.id == request.session_id)
+                .values(
+                    title=request.message[:100] if len(history) == 0 else SessionModel.title
+                )
+            )
+            await local_db.commit()
 
         yield f"data: {json.dumps({'type': 'done', 'content': full_response})}\n\n"
 

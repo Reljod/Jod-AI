@@ -47,7 +47,17 @@ class ContextState:
                     texts.append(m.content)
             return len(encoding.encode(" ".join(texts)))
         except Exception:
-            return sum(len(m.content) if isinstance(m.content, str) else 0 for m in self.messages)
+            total_len = 0
+            for m in self.messages:
+                if isinstance(m.content, str):
+                    total_len += len(m.content)
+                elif isinstance(m.content, list):
+                    for item in m.content:
+                        if isinstance(item, str):
+                            total_len += len(item)
+                        elif isinstance(item, dict) and "text" in item and isinstance(item["text"], str):
+                            total_len += len(item["text"])
+            return total_len // 2
 
 
 SYSTEM_PROMPT = """You are Jod-AI, a capable AI assistant powered by a deep agent framework.
