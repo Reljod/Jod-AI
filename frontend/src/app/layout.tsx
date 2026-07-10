@@ -14,10 +14,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Jod-AI",
-  description: "AI startup project",
-  icons: {
-    icon: "/favicon.svg",
-  },
+  description: "Jod-AI - Deep Agent Platform",
+  icons: { icon: "/favicon.svg" },
 };
 
 export default function RootLayout({
@@ -26,11 +24,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className="min-h-screen bg-background font-sans antialiased">
+        {children}
+      </body>
     </html>
   );
 }
