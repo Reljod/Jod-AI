@@ -1,0 +1,36 @@
+[project]
+name = "jod-ai"
+version = "0.1.0"
+description = "Jod-AI - Deep Agent Platform"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi[standard]>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "pydantic>=2.9.0",
+    "pydantic-settings>=2.5.0",
+    "python-dotenv>=1.0.0",
+    "langgraph>=0.3.0",
+    "langchain>=0.3.0",
+    "langchain-core>=0.3.0",
+    "langchain-community>=0.3.0",
+    "langchain-postgres>=0.2.0",
+    "sqlalchemy>=2.0.0",
+    "asyncpg>=0.30.0",
+    "psycopg2-binary>=2.9.0",
+    "alembic>=1.13.0",
+    "httpx>=0.27.0",
+    "openai>=1.50.0",
+    "tiktoken>=0.8.0",
+    "aiofiles>=24.1.0",
+    "python-multipart>=0.0.12",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.ruff.format]
+quote-style = "double"
